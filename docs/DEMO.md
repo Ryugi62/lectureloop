@@ -9,9 +9,9 @@ show the review loop. The video has no voice-over and no music; captions carry t
 
 | # | Scene | s | On screen | Caption |
 |---|---|---|---|---|
-| 1 | hook | 6 | Home, 2 free lectures left | **LectureLoop** — The forgetting curve starts the moment class ends. Turn the lecture you just heard into a 3-minute review before you leave the room. |
+| 1 | hook | 6 | Home, 2 free lectures left | **LectureLoop** — Not a summary: what your lecturer said will be on the exam, with the second they said it, then a quiz that comes back on day 1, 3 and 7. |
 | 2 | record | 7 | Record screen, timer running | **Record in class** — keeps recording with the screen off (microphone foreground service). |
-| 3 | import | 12 | Downloads picker → "Signals and Systems" → Build | **...or use any recording** — pick the file and name the class. |
+| 3 | import | 12 | Downloads picker → "Signals and Systems" → Build | **...or use any recording** — pick the file and name the class (demo recordings: short scripts read by a text-to-speech voice). |
 | 4 | processing | 8 | Named steps + real seconds counter (not sped up) | **Checked, then heard** — the server checks the RevenueCat entitlement and the allowance first, then Gemini answers in a strict JSON schema; the app re-checks every rule. |
 | 5 | card | 12 | 2 exam hints, "What they said", play from 00:38, key ideas, to-dos | **Only what the lecturer said** — exam hints with their exact words, key ideas, homework with the deadline as spoken. |
 | 6 | nextday | 18 | Clock +1 day → Today's loop → quiz 4/5 → "Day 1 done", next review day 3 | **The loop: day 1, 3, 7** — clock moved forward for this demo. |

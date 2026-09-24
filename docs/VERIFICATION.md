@@ -59,6 +59,7 @@ Emulator: API 35 (Google APIs, arm64), 1180×2556 @ 440 dpi. Debug build, `gemin
 | 3rd lecture in the same week | Paywall opens with "2/2 free lectures used this week · resets Monday"; closing it shows "Your recording is waiting". |
 | Record screen | Foreground service starts, timer runs, closing discards the audio. |
 | RevenueCat Test Store purchase, restore, Customer Center | **Pending** — needs the RevenueCat project key (see REVENUECAT_SETUP.md). |
+| Offering metadata changed in the dashboard (`free_lectures_per_week` 2 → 1) shows up without a new build | **Pending** — same key. |
 
 Bugs found and fixed during this run: a remembered class name was appended to instead of replaced by the demo driver (driver clears the field now); returning from the paywall re-opened the file picker and the paywall (one-shot guards in `CaptureViewModel`); a 147.8 s file was measured as 147 s, which could reject a correct last timestamp (duration now rounds up).
 

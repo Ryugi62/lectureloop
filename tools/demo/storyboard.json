@@ -6,7 +6,7 @@
    "scene": "hook",
    "seconds": 6,
    "head": "LectureLoop",
-   "body": "The forgetting curve starts the moment class ends. Turn the lecture you just heard into a 3-minute review before you leave the room.",
+   "body": "Not a summary: what your lecturer said will be on the exam, with the second they said it, then a quiz that comes back on day 1, 3 and 7.",
    "fit": "trim"
   },
   {
@@ -20,7 +20,7 @@
    "scene": "import",
    "seconds": 12,
    "head": "...or use any recording",
-   "body": "Pick the file and name the class.",
+   "body": "Pick the file and name the class. (Demo recordings: short scripts read by a text-to-speech voice.)",
    "fit": "speed"
   },
   {
