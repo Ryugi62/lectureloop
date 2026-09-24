@@ -13,9 +13,11 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
-      - uses: android-actions/setup-android@v3
-      - name: Android SDK 37
-        run: sdkmanager "platforms;android-37.0" "build-tools;36.0.0"
+      - name: Android SDK 37 (runner's preinstalled SDK)
+        run: |
+          SDKM="$(ls -d "$ANDROID_HOME"/cmdline-tools/*/bin | sort -V | tail -1)/sdkmanager"
+          yes | "$SDKM" --licenses > /dev/null || true
+          "$SDKM" "platforms;android-37.0" "build-tools;36.0.0" > /dev/null
       - name: "Unit tests, lint and debug APK (no keys needed: the app builds in unconfigured mode)"
         run: ./gradlew check :app:assembleDebug --no-daemon
       - uses: actions/upload-artifact@v4
