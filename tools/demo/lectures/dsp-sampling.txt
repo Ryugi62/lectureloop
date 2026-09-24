@@ -1,0 +1,17 @@
+Okay everyone, let's get started. Today is lecture five, sampling and aliasing.
+
+Last week we described signals in continuous time. But a computer can only store numbers, so we have to take samples. We measure the signal every T seconds. The sampling rate, f s, is one over T.
+
+Here is the key idea of today. If a signal contains no frequency higher than f max, we can rebuild it perfectly from its samples, as long as we sample faster than two times f max. Two times f max is called the Nyquist rate. Please remember this sentence exactly, because this will be on the midterm. Sample faster than twice the highest frequency.
+
+So what happens if we sample too slowly? Let me give you an example. Take a seven kilohertz tone and sample it at ten kilohertz. Half of the sampling rate is five kilohertz, so seven kilohertz is above the limit. After sampling, the tone looks exactly like a three kilohertz tone. Ten minus seven is three. That false three kilohertz tone is called an alias. And once aliasing happens, you cannot undo it. The information is gone.
+
+By the way, the air conditioner in this room is very loud today, sorry about that. I asked the facilities office to fix it.
+
+Okay, back to the topic. How do real systems avoid aliasing? Before the sampler, we put a low pass filter. It removes everything above half of the sampling rate. We call it an anti aliasing filter. This is why CD audio uses forty four point one kilohertz. Human hearing stops around twenty kilohertz, so forty four point one gives us a little room for the filter.
+
+One more exam tip. On the exam, I often give you a tone and a sampling rate, and you must compute the alias frequency. Practice that calculation. It is an easy point if you practice it.
+
+For next class, please read chapter four, sections one to three. And homework three is due next Monday before class. Problems four point two, four point five, and four point eight. Submit it on the course website.
+
+That's all for today. See you on Wednesday.

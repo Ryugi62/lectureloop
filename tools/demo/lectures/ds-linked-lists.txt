@@ -1,0 +1,15 @@
+Good morning. Today we start linked lists.
+
+An array keeps its elements next to each other in memory. That is why reading element i is fast, it takes constant time. But inserting in the middle is slow, because every element after it has to move.
+
+A linked list solves that. Each node stores a value and a pointer to the next node. The list only remembers the head, the first node. The last node points to null.
+
+To insert after a node you already have, you change two pointers. That is constant time, no shifting. Write this down, this comparison will definitely be on the quiz next week: array access is order one, linked list access is order n, but linked list insertion after a known node is order one.
+
+Why is access order n? Because to reach the fifth node you must start at the head and follow four pointers. There is no shortcut.
+
+A common bug: when you delete a node, update the previous node's pointer before you lose the reference. Many of you lose points on this in the lab, so be careful.
+
+Lab two opens tonight. Implement insert, delete and reverse for a singly linked list. It is due Friday at midnight.
+
+Next time, we will look at doubly linked lists. See you then.

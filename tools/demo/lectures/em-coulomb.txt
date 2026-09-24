@@ -1,0 +1,15 @@
+Alright, let's begin. Today's topic is Coulomb's law.
+
+Two point charges push or pull on each other. The force is proportional to the product of the charges and inversely proportional to the square of the distance between them.
+
+In symbols, F equals k times q one times q two, divided by r squared. The constant k is about nine times ten to the ninth newton meter squared per coulomb squared.
+
+If the charges have the same sign, they repel. If the signs are opposite, they attract.
+
+Here is the part students always get wrong. If you double the distance, the force does not become half. It becomes one quarter. I will put an inverse square question on the midterm, I promise you that.
+
+Force is a vector. When there are three charges, you add the forces as vectors, not as plain numbers. Draw the arrows first, then add the components.
+
+For Thursday, finish problem set two, problems one through six, and read section twenty one point three.
+
+That's it for today.

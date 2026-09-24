@@ -1,0 +1,112 @@
+{
+ "title": "Lecture 5: Sampling and Aliasing",
+ "summary": "This lecture covers the principles of sampling continuous-time signals into computers, the definition of the Nyquist rate, the consequences of aliasing, and how anti-aliasing filters prevent it.",
+ "concepts": [
+  {
+   "name": "Sampling Rate",
+   "explanation": "Signals are measured every T seconds, and the sampling rate f_s is defined as 1 over T.",
+   "at": "00:15"
+  },
+  {
+   "name": "Nyquist Rate",
+   "explanation": "Two times the maximum frequency (2 * f_max) of a signal. Sampling faster than this allows a signal to be rebuilt perfectly from its samples.",
+   "at": "00:32"
+  },
+  {
+   "name": "Aliasing",
+   "explanation": "When you sample too slowly, a higher frequency folds into a lower frequency alias. Once aliasing happens, it cannot be undone and the original information is lost.",
+   "at": "00:47"
+  },
+  {
+   "name": "Anti-Aliasing Filter",
+   "explanation": "A low-pass filter placed before the sampler to remove everything above half of the sampling rate, which is why CD audio uses 44.1 kHz.",
+   "at": "01:32"
+  }
+ ],
+ "examPoints": [
+  {
+   "point": "Sample faster than twice the highest frequency.",
+   "cue": "Please remember this sentence exactly, because this will be on the mid-term.",
+   "at": "00:38"
+  },
+  {
+   "point": "Compute the alias frequency when given a tone and sampling rate.",
+   "cue": "On the exam, I often give you a tone and the sampling rate, and you must compute the alias frequency. Practice that calculation.",
+   "at": "01:56"
+  }
+ ],
+ "quiz": [
+  {
+   "question": "What is the sampling rate fs defined as?",
+   "choices": [
+    "T",
+    "1 over T",
+    "2 * f_max",
+    "f_max over 2"
+   ],
+   "answerIndex": 1,
+   "explanation": "The lecturer states that the sampling rate fs is one over T.",
+   "at": "00:19"
+  },
+  {
+   "question": "What is two times Fmax called?",
+   "choices": [
+    "The Nyquist rate",
+    "The alias frequency",
+    "The low-pass filter",
+    "The sampling period"
+   ],
+   "answerIndex": 0,
+   "explanation": "Two times f_max is called the Nyquist rate.",
+   "at": "00:35"
+  },
+  {
+   "question": "If you sample a 7 kHz tone at 10 kHz, what is the resulting alias frequency?",
+   "choices": [
+    "7 kHz",
+    "10 kHz",
+    "5 kHz",
+    "3 kHz"
+   ],
+   "answerIndex": 3,
+   "explanation": "The half of the sampling rate is 5 kHz, so 7 kHz is above the limit. 10 minus 7 equals 3, giving a 3 kHz tone.",
+   "at": "01:00"
+  },
+  {
+   "question": "Why does CD audio use a 44.1 kHz sampling rate?",
+   "choices": [
+    "Because human hearing stops around 20 kHz, leaving room for an anti-aliasing filter",
+    "Because computers can only store 44.1 thousand samples per second",
+    "Because 44.1 kHz is exactly twice the Nyquist rate of every instrument",
+    "Because it eliminates all need for a low-pass filter"
+   ],
+   "answerIndex": 0,
+   "explanation": "Human hearing stops around 20 kHz, and 44.1 gives a little room for the filter.",
+   "at": "01:47"
+  },
+  {
+   "question": "What removes everything above half of the sampling rate before the sampler?",
+   "choices": [
+    "An aliasing amplifier",
+    "A low-pass filter",
+    "A high-pass filter",
+    "A digital converter"
+   ],
+   "answerIndex": 1,
+   "explanation": "A low-pass filter (anti-aliasing filter) removes everything above half of the sampling rate.",
+   "at": "01:34"
+  }
+ ],
+ "todos": [
+  {
+   "task": "Read chapter 4, sections 1 to 3",
+   "at": "02:09",
+   "due": null
+  },
+  {
+   "task": "Complete homework 3 (Problems 4.2, 4.5, and 4.8)",
+   "at": "02:14",
+   "due": "next Monday before class"
+  }
+ ]
+}

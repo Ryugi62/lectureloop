@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- Same geometry as app/src/main/res/drawable/ic_launcher_foreground.xml (108-unit grid), scaled 12.8x around the centre. -->
+  <rect width="1024" height="1024" fill="#3182F6"/>
+  <g transform="translate(512 512) scale(12.8) translate(-54 -54)">
+    <path d="M65,34.95 A22,22 0 1 1 39.86,37.15" fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round"/>
+    <path d="M46.8,31.3 L35.4,32.1 L43.1,42.5 Z" fill="#FFFFFF"/>
+    <path d="M44,50 h4 v8 h-4z M52,45 h4 v18 h-4z M60,49 h4 v10 h-4z" fill="#FFFFFF"/>
+  </g>
+</svg>
