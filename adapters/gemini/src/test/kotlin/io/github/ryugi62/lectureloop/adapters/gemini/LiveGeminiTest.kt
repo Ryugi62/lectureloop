@@ -17,19 +17,20 @@ class LiveGeminiTest {
     private fun run(label: String, inlineLimit: Long) {
         org.junit.Assume.assumeTrue("set LIVE_GEMINI=1 to call the real API", enabled)
         val file = File(System.getenv("LIVE_AUDIO"))
-        val seconds = (System.getenv("LIVE_AUDIO_SECONDS") ?: "148").toInt()
-        val analyzer = GeminiLectureAnalyzer(apiKey = System.getenv("GEMINI_API_KEY"), audio = FileAudioBytes(), inlineLimitBytes = inlineLimit)
+        val seconds = System.getenv("LIVE_AUDIO_SECONDS")?.takeIf { it.isNotBlank() }?.toInt() ?: 148
+        val model = System.getenv("LIVE_MODEL")?.takeIf { it.isNotBlank() } ?: GeminiLectureAnalyzer.DEFAULT_MODEL
+        val analyzer = GeminiLectureAnalyzer(apiKey = System.getenv("GEMINI_API_KEY"), audio = FileAudioBytes(), model = model, inlineLimitBytes = inlineLimit)
         val started = System.nanoTime()
         val card = runBlocking { analyzer.analyze(AudioRef(file.absolutePath, "audio/mp4", seconds)) }
         val ms = (System.nanoTime() - started) / 1_000_000
         val report = buildString {
-            appendLine("path=$label model=${GeminiLectureAnalyzer.DEFAULT_MODEL} ms=$ms")
+            appendLine("path=$label model=$model ms=$ms")
             card.examPoints.forEach { appendLine("exam ${it.at.label} ${it.point}") }
             card.concepts.forEach { appendLine("concept ${it.at.label} ${it.name}") }
             card.quiz.forEach { appendLine("quiz ${it.at.label} ${it.question}") }
             card.todos.forEach { appendLine("todo ${it.at.label} ${it.task} | due=${it.due}") }
         }
-        File("build/live-gemini-$label.txt").writeText(report)
+        File("build/live-gemini-$label-$model.txt").writeText(report)
         println(report)
         assertEquals(emptyList(), ReviewCardRules.check(card, seconds))
     }

@@ -87,6 +87,15 @@ class ProcessLectureTest {
         assertIs<ProcessResult.Done>(process("DSP", AUDIO))
     }
 
+    @Test fun theServersLimitWinsOverTheAppsOwnCount() = runTest {
+        val serverSays = Access.Paywalled(used = 2, limit = 2, resetsAt = java.time.Instant.parse("2026-09-27T15:00:00Z"))
+        val analyzer = ScriptedAnalyzer(err(AnalyzerException.LimitReached(serverSays)))
+        val result = useCase(analyzer).invoke("DSP", AUDIO)
+        assertEquals(ProcessResult.Paywalled(serverSays), result)
+        assertEquals(1, analyzer.feedbackSeen.size) // not retried
+        assertTrue(repo.items.isEmpty())
+    }
+
     @Test fun proUserIsNeverPaywalled() = runTest {
         val analyzer = ScriptedAnalyzer(*Array(3) { ok(card()) })
         val process = useCase(analyzer, FakeBilling(pro = true))

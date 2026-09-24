@@ -25,6 +25,8 @@ android {
         versionName = "0.1.0"
         buildConfigField("String", "GEMINI_API_KEY", "\"${key("GEMINI_API_KEY")}\"")
         buildConfigField("String", "GEMINI_MODEL", "\"${key("GEMINI_MODEL").ifEmpty { "gemini-3.5-flash-lite" }}\"")
+        // Production path: the LectureLoop server holds the AI key and checks the RevenueCat entitlement.
+        buildConfigField("String", "LECTURELOOP_SERVER_URL", "\"${key("LECTURELOOP_SERVER_URL")}\"")
     }
 
     buildTypes {

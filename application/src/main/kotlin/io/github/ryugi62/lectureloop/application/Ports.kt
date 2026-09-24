@@ -24,6 +24,20 @@ sealed class AnalyzerException(message: String) : Exception(message) {
     class Network(detail: String) : AnalyzerException("Network: $detail")
 
     class Service(val code: Int, detail: String) : AnalyzerException("Service $code: $detail")
+
+    /** The server enforces the weekly allowance too; its answer wins over the app's own count. */
+    class LimitReached(val access: io.github.ryugi62.lectureloop.domain.Access.Paywalled) : AnalyzerException("Weekly limit reached")
+}
+
+/** Cuts a recording into [start, end) windows. Returns null when this format cannot be cut (then one call is used). */
+interface AudioSplitter {
+    suspend fun split(audio: AudioRef, windows: List<Pair<Int, Int>>): List<AudioRef>?
+    fun release(parts: List<AudioRef>) {}
+}
+
+/** Writes one title and summary for the whole lecture from the windows' own titles and summaries (text only). */
+interface CardComposer {
+    suspend fun titleAndSummary(parts: List<ReviewCard>): Pair<String, String>
 }
 
 interface LectureRepository {

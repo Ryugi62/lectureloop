@@ -26,30 +26,37 @@
   {
    "scene": "processing",
    "seconds": 8,
-   "head": "One Gemini call listens",
-   "body": "It must answer in a strict JSON schema. The app checks every rule (5 questions, 4 choices, every timestamp inside the recording) and retries once with the reasons.",
+   "head": "Checked, then heard",
+   "body": "The server checks the RevenueCat entitlement and the weekly allowance first, then Gemini listens and must answer in a strict JSON schema. The app re-checks every rule and retries once with the reasons.",
    "fit": "trim"
   },
   {
    "scene": "card",
-   "seconds": 14,
+   "seconds": 12,
    "head": "Only what the lecturer said",
    "body": "Exam hints with their exact words, key ideas, and homework with the deadline as spoken. Tap a time to hear that moment.",
    "fit": "speed"
   },
   {
    "scene": "nextday",
-   "seconds": 20,
+   "seconds": 18,
    "head": "The loop: day 1, 3, 7",
    "body": "Next day (clock moved forward for this demo). 4 of 5 correct moves the lecture on; a miss brings it back tomorrow.",
    "fit": "speed"
   },
   {
    "scene": "paywall",
-   "seconds": 24,
+   "seconds": 22,
    "head": "2 free lectures a week",
-   "body": "The limit comes from RevenueCat offering metadata. Semester Pass = one term. The 'pro' entitlement unlocks it, and the waiting recording is built straight away. (RevenueCat Test Store)",
+   "body": "The limit comes from RevenueCat offering metadata and is enforced by the server too. Semester Pass = one term. 'pro' unlocks it, and the waiting recording is built straight away. (RevenueCat Test Store)",
    "fit": "speed"
+  },
+  {
+   "scene": "long",
+   "seconds": 12,
+   "fit": "speed",
+   "head": "Real lectures are 75 minutes",
+   "body": "Long recordings are cut into 10-minute windows and heard in parallel, so every timestamp stays on the right sentence and the quiz covers the whole lecture."
   },
   {
    "scene": "account",

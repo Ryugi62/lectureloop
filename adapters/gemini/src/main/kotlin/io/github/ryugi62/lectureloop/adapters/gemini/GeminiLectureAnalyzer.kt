@@ -50,8 +50,16 @@ class GeminiLectureAnalyzer(
 ) : LectureAnalyzer {
 
     override suspend fun analyze(audio: AudioRef, feedback: List<Violation>): ReviewCard = withContext(Dispatchers.IO) {
+        var uploaded: String? = null
         try {
-            val media = mediaPart(audio)
+            val media = if (this@GeminiLectureAnalyzer.audio.size(audio) <= inlineLimitBytes) {
+                val data = this@GeminiLectureAnalyzer.audio.open(audio).use { Base64.getEncoder().encodeToString(it.readBytes()) }
+                buildJsonObject { putJsonObject("inline_data") { put("mime_type", audio.mimeType); put("data", data) } }
+            } else {
+                val file = uploadFile(audio, this@GeminiLectureAnalyzer.audio.size(audio))
+                uploaded = file.first
+                buildJsonObject { putJsonObject("file_data") { put("mime_type", audio.mimeType); put("file_uri", file.second) } }
+            }
             val body = requestBody(media, feedback)
             val request = Request.Builder()
                 .url(baseUrl.resolve("v1beta/models/$model:generateContent")!!)
@@ -61,17 +69,9 @@ class GeminiLectureAnalyzer(
             http.newCall(request).execute().use { response -> parseCard(expectOk(response)) }
         } catch (e: IOException) {
             throw AnalyzerException.Network(e.message ?: e.javaClass.simpleName)
-        }
-    }
-
-    private suspend fun mediaPart(ref: AudioRef): JsonObject {
-        val size = audio.size(ref)
-        return if (size <= inlineLimitBytes) {
-            val data = audio.open(ref).use { Base64.getEncoder().encodeToString(it.readBytes()) }
-            buildJsonObject { putJsonObject("inline_data") { put("mime_type", ref.mimeType); put("data", data) } }
-        } else {
-            val uri = uploadFile(ref, size)
-            buildJsonObject { putJsonObject("file_data") { put("mime_type", ref.mimeType); put("file_uri", uri) } }
+        } finally {
+            // The Files API would keep the recording for 48 hours; we do not need it after this call.
+            uploaded?.let { name -> runCatching { http.newCall(Request.Builder().url(baseUrl.resolve("v1beta/$name")!!).header("x-goog-api-key", apiKey).delete().build()).execute().close() } }
         }
     }
 
@@ -96,8 +96,8 @@ class GeminiLectureAnalyzer(
         }
     }
 
-    /** Resumable upload: start → upload+finalize → wait until ACTIVE. Returns the file URI. */
-    private suspend fun uploadFile(ref: AudioRef, size: Long): String {
+    /** Resumable upload: start → upload+finalize → wait until ACTIVE. Returns (file name, file URI). */
+    private suspend fun uploadFile(ref: AudioRef, size: Long): Pair<String, String> {
         val start = Request.Builder()
             .url(baseUrl.resolve("upload/v1beta/files")!!)
             .header("x-goog-api-key", apiKey)
@@ -123,7 +123,7 @@ class GeminiLectureAnalyzer(
         }
         repeat(MAX_POLLS) {
             when (file["state"]?.jsonPrimitive?.content) {
-                "ACTIVE", null -> return file["uri"]!!.jsonPrimitive.content
+                "ACTIVE", null -> return file["name"]!!.jsonPrimitive.content to file["uri"]!!.jsonPrimitive.content
                 "FAILED" -> throw AnalyzerException.Service(422, "audio could not be processed")
             }
             delay(pollDelayMillis)

@@ -95,6 +95,7 @@ class GeminiLectureAnalyzerTest {
         server.enqueue(MockResponse().setResponseCode(200).setBody("""{"file":{"name":"files/abc","uri":"https://files.example/abc","mimeType":"audio/mp4","state":"PROCESSING"}}"""))
         server.enqueue(MockResponse().setResponseCode(200).setBody("""{"name":"files/abc","uri":"https://files.example/abc","mimeType":"audio/mp4","state":"ACTIVE"}"""))
         server.enqueue(generateResponse(cardJson))
+        server.enqueue(MockResponse().setResponseCode(200).setBody("{}"))
 
         analyzer(inlineLimit = 1024).analyze(audio)
 
@@ -118,6 +119,10 @@ class GeminiLectureAnalyzerTest {
         val generate = requestJson(server.takeRequest().body.readUtf8())
         val fileData = generate["contents"]!!.jsonArray[0].jsonObject["parts"]!!.jsonArray[0].jsonObject["file_data"]!!.jsonObject
         assertEquals("https://files.example/abc", fileData["file_uri"]!!.jsonPrimitive.content)
+
+        val delete = server.takeRequest()
+        assertEquals("DELETE", delete.method)
+        assertEquals("/v1beta/files/abc", delete.path)
     }
 
     @Test fun rateLimitAndBadAnswersMapToAnalyzerExceptions() = runTest {

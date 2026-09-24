@@ -10,7 +10,12 @@ PKG=io.github.ryugi62.lectureloop
 AUDIO="${DEMO_AUDIO_DIR:-demo/audio}"
 
 grep -q '^REVENUECAT_TEST_STORE_KEY=.\+' local.properties || { echo "REVENUECAT_TEST_STORE_KEY missing in local.properties"; exit 2; }
-grep -q '^GEMINI_API_KEY=.\+' local.properties || { echo "GEMINI_API_KEY missing in local.properties"; exit 2; }
+if grep -q '^LECTURELOOP_SERVER_URL=.\+' local.properties; then
+  # server mode (how it ships): the server must be up with GEMINI_API_KEY and REVENUECAT_SECRET_KEY
+  curl -fsS "${SERVER_HEALTH:-http://localhost:8787/healthz}" >/dev/null || { echo "LectureLoop server is not running (see README → Run it)"; exit 2; }
+else
+  grep -q '^GEMINI_API_KEY=.\+' local.properties || { echo "set LECTURELOOP_SERVER_URL or GEMINI_API_KEY in local.properties"; exit 2; }
+fi
 "$ADB" get-state >/dev/null
 
 ./gradlew -q :app:assembleDebug

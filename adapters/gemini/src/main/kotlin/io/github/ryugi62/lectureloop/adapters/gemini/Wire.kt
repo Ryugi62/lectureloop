@@ -23,12 +23,23 @@ internal data class CardDto(
     val examPoints: List<ExamPointDto>,
     val quiz: List<QuizDto>,
     val todos: List<TodoDto> = emptyList(),
-)
+) {
+    companion object
+}
 
 @Serializable internal data class ConceptDto(val name: String, val explanation: String, val at: String)
 @Serializable internal data class ExamPointDto(val point: String, val cue: String, val at: String)
 @Serializable internal data class QuizDto(val question: String, val choices: List<String>, val answerIndex: Int, val explanation: String, val at: String)
 @Serializable internal data class TodoDto(val task: String, val due: String? = null, val at: String)
+
+internal fun CardDto.Companion.from(card: ReviewCard) = CardDto(
+    title = card.title,
+    summary = card.summary,
+    concepts = card.concepts.map { ConceptDto(it.name, it.explanation, it.at.label) },
+    examPoints = card.examPoints.map { ExamPointDto(it.point, it.cue, it.at.label) },
+    quiz = card.quiz.map { QuizDto(it.question, it.choices, it.answerIndex, it.explanation, it.at.label) },
+    todos = card.todos.map { TodoDto(it.task, it.due, it.at.label) },
+)
 
 internal fun CardDto.toDomain(): ReviewCard {
     fun at(value: String, where: String) =
@@ -114,6 +125,7 @@ Build a review card the student can study in 3 minutes right after class.
 
 Rules:
 - Use only what the lecturer actually says in the audio. Do not add outside facts.
+- Cover the whole recording, not just its opening: lectures run 60 to 90 minutes, so draw concepts and questions from the beginning, the middle and the end.
 - "at" is the MM:SS position in the audio where the supporting sentence starts. Every item needs one.
 - examPoints: things the lecturer signals will be tested or must be memorized ("this will be on the exam", "remember this", "practice this"). Put the lecturer's own words in "cue". If the lecturer gives no such signal, return an empty list. Skip small talk and logistics that are unrelated to the subject.
 - concepts: 3 to 5 core ideas, each explained in one or two plain sentences a classmate would understand.

@@ -252,6 +252,17 @@ def scene_paywall():
     time.sleep(1.5)
 
 
+def scene_long():
+    """A 74-minute public-domain lecture recording (LibriVox) — shows the windowed analysis on a real length."""
+    import_file("Philosophy 74 min.m4a", "Philosophy")
+    wait(regex=r"things? your lecturer said|No exam hints", timeout=240)
+    time.sleep(1.5)
+    swipe_up(0.5)
+    time.sleep(1.5)
+    shell("input keyevent 4")
+    time.sleep(1)
+
+
 def scene_account():
     tap(id="icon-Account", pause=2)
     tap(id="cta", pause=4)                         # Manage subscription → Customer Center
@@ -266,6 +277,7 @@ SCENES = {
     "card": scene_card,
     "nextday": scene_nextday,
     "paywall": scene_paywall,
+    "long": scene_long,
     "account": scene_account,
 }
 OFF_CAMERA = {"nextday": [seed_second_lecture, jump_one_day]}

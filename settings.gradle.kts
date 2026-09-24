@@ -13,4 +13,4 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "lectureloop"
-include(":domain", ":application", ":adapters:gemini", ":app")
+include(":domain", ":application", ":adapters:gemini", ":server", ":app")

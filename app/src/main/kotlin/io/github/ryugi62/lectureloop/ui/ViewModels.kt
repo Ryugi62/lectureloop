@@ -4,6 +4,8 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.CreationExtras
 import io.github.ryugi62.lectureloop.application.FailureReason
 import io.github.ryugi62.lectureloop.application.Offer
@@ -36,7 +38,7 @@ class Factory(private val c: AppContainer) : ViewModelProvider.Factory {
         HomeViewModel::class.java -> HomeViewModel(c)
         CaptureViewModel::class.java -> CaptureViewModel(c)
         LectureViewModel::class.java -> LectureViewModel(c)
-        PaywallViewModel::class.java -> PaywallViewModel(c)
+        PaywallViewModel::class.java -> PaywallViewModel(c, extras.createSavedStateHandle())
         AccountViewModel::class.java -> AccountViewModel(c)
         else -> error("Unknown ViewModel $modelClass")
     } as T
@@ -138,6 +140,7 @@ internal fun FailureReason.friendly(): String = when (this) {
     FailureReason.Malformed -> "The AI answered in a broken format twice. Your free lecture wasn't used — try again."
     FailureReason.Busy -> "The AI service is busy right now. Wait a minute and try again — nothing was used."
     is FailureReason.Unreachable -> "We couldn't reach the AI service ($detail). Check your connection — nothing was used."
+    is FailureReason.LimitReached -> "You've used your free lectures for this week."
 }
 
 // ---------- Lecture card + quiz ----------
@@ -193,7 +196,14 @@ data class PaywallState(
     val unlocked: Boolean = false,
 )
 
-class PaywallViewModel(private val c: AppContainer) : ViewModel() {
+class PaywallViewModel(private val c: AppContainer, args: SavedStateHandle = SavedStateHandle()) : ViewModel() {
+    /** The limit that sent us here — the server's count wins over the app's own when they differ. */
+    private val arrivedWith: Access.Paywalled? = run {
+        val used = args.get<String>("used")?.toIntOrNull()
+        val limit = args.get<String>("limit")?.toIntOrNull()
+        val resets = args.get<String>("resets")?.let { runCatching { java.time.Instant.parse(it) }.getOrNull() }
+        if (used != null && limit != null && resets != null) Access.Paywalled(used, limit, resets) else null
+    }
     private val _state = MutableStateFlow(PaywallState())
     val state: StateFlow<PaywallState> = _state
     val testStore: Boolean get() = c.billingConfigured && io.github.ryugi62.lectureloop.BuildConfig.DEBUG
@@ -202,7 +212,7 @@ class PaywallViewModel(private val c: AppContainer) : ViewModel() {
 
     fun load() = viewModelScope.launch {
         _state.update { it.copy(loading = true, message = null) }
-        val access = c.accessStatus()
+        val access = arrivedWith ?: c.accessStatus()
         try {
             val offer = c.loadPaywall()
             val preselect = offer.plans.firstOrNull { it.kind == PlanKind.SEMESTER } ?: offer.plans.firstOrNull()

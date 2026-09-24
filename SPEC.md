@@ -1,4 +1,4 @@
-# LectureLoop — SPEC v0.1 (2026-09-24)
+# LectureLoop — SPEC v0.2 (2026-09-24)
 
 ## 0. One line
 A student records (or shares) a lecture right after class and, before leaving the room, gets a **review card**: the points the lecturer said will be tested (each with the second it was said), a 5-question quiz, and the homework that was assigned. The quiz then comes back on day 1, 3 and 7 until it is mastered — the **loop**.
@@ -12,7 +12,9 @@ The essence is not "an AI summary". It is **breaking the forgetting curve right 
   - A 2:28 lecture → valid review card in ≤ 30 s, every timestamp within ±3 s of an independent Whisper transcript.
   - Android emulator: record/import → card → quiz → 3rd lecture of the week shows the paywall → RevenueCat Test Store purchase → `pro` entitlement active → processing unlocked → restore works.
 - Demo video < 2:00.
-- Non-goals (v0.1): on-device transcription, accounts/sync, sharing cards with classmates, iOS build, Play Store release.
+- Long lectures: a 74-minute recording → every item within the right sentence (≤ 15 s of the Whisper segment start) and questions spread over the whole lecture.
+- Server mode: no AI key in the app; the weekly allowance and `pro` are enforced by the server before any AI call.
+- Non-goals (v0.2): on-device transcription, accounts/sync, sharing cards with classmates, iOS build, Play Store release.
 
 ## 2. Constraints
 - Kotlin 2.4 (AGP 9 built-in Kotlin), Jetpack Compose (Material 3), minSdk 26, targetSdk 36, compileSdk 37 (required by Compose BOM 2026.09).
@@ -53,6 +55,8 @@ The essence is not "an AI summary". It is **breaking the forgetting curve right 
 | UC-3 `SubmitQuiz` | lecture id, answers | score, next review | pass = ≥ 4/5 → next step; fail → same step tomorrow |
 | UC-4 `LoadPaywall` / `Purchase` / `Restore` | plan id | `Unlocked` · `Cancelled` · `Failed` | plans ordered Semester first; savings vs monthly computed in the domain; the paywall impression is reported; a recording that hit the paywall is built right after `Unlocked` |
 | UC-5 `AccessStatus` | — | pro?, lectures left this week, reset time | offering metadata `free_lectures_per_week` overrides the default 2 |
+| UC-6 `BuildCard` | audio | `Built(card)` · `Rejected(reason)` | recordings longer than one 10-minute window are cut (`AudioSplitter`), analysed in parallel, shifted and merged (`CardMerger`); title/summary from `CardComposer` (text only) |
+| UC-7 server `CardService` | RevenueCat app user ID, time zone, audio | card · 402 limit · 422 · 429 · 502 | `pro` via RevenueCat REST (secret key) → weekly allowance per user → `BuildCard`; only built cards count |
 
 ## 6. Acceptance criteria (Given / When / Then → test)
 | AC | Given / When / Then | Test |
@@ -75,12 +79,21 @@ The essence is not "an AI summary". It is **breaking the forgetting curve right 
 | AC-14 | HTTP 429 / adapter / `AnalyzerException.RateLimited`; non-JSON body → `Malformed` | same |
 | AC-15 | retry with violations / adapter / prompt contains each violation message | same |
 | AC-16 | source tree / `LayeringTest` / no `android.`, `com.revenuecat`, `okhttp3`, `java.io.File` import in domain/application | `LayeringTest` |
+| AC-17 | 148 s, 1290 s, 1500 s recordings / `CardMerger.windows` / 1, 2 (90 s tail joins), 3 windows | `CardMergerTest` |
+| AC-18 | window cards / `shiftedBy` + `CardMerger.merge` / every timestamp moved by the window start; 5 questions and ≤ 5 concepts picked across windows (evenly spaced when windows > slots), shown in lecture order; ≤ 8 exam points; duplicate to-dos collapse | `CardMergerTest` |
+| AC-19 | 25-minute recording + splitter / `BuildCard` / 3 windows analysed, shifted, merged, splitter released; a window failing twice fails the card; an unsplittable format uses one call | `WindowedBuildCardTest` |
+| AC-20 | free user at the server / `CardService` / 2 cards a week then `Limit` without an AI call; per user; `pro` unlimited; failed cards not counted; Monday reset in the student's zone; usage survives restart | `CardServiceTest` |
+| AC-21 | RevenueCat REST `subscribers` answer / `RevenueCatRestEntitlements` / `pro` active, expired, grace period, lifetime, missing; API error → free (fail closed); app user ID URL-encoded | `RevenueCatRestEntitlementsTest` |
+| AC-22 | HTTP `POST /v1/cards` / `HttpApi` / 200 card JSON, 402 with used/limit/resetsAt, 400 without user or seconds | `HttpApiTest` |
+| AC-23 | server answers 402 / `ProxyLectureAnalyzer` + `ProcessLecture` / `Paywalled` with the server's numbers, not retried | `ProxyLectureAnalyzerTest`, `ProcessLectureTest` |
+| AC-24 | Files API upload / `GeminiLectureAnalyzer` / the uploaded file is deleted after the call | `GeminiLectureAnalyzerTest` |
 
 ## 7. Architecture (Clean) — dependencies point inward only
 ```
 domain/            pure Kotlin: model, rules, scheduler, access policy, plan math
 application/       use cases + ports (LectureAnalyzer, LectureRepository, BillingGateway, Clock, IdSource)
-adapters/gemini/   JVM: GeminiLectureAnalyzer (OkHttp + kotlinx.serialization) implements LectureAnalyzer
+adapters/gemini/   JVM: GeminiLectureAnalyzer, GeminiCardComposer, ProxyLectureAnalyzer, CardJson (OkHttp + kotlinx.serialization)
+server/            JVM: CardService, RevenueCatRestEntitlements, FileUsageStore, FfmpegAudioSplitter, HttpApi (JDK HttpServer)
 app/               Android: adapters (RevenueCat billing, JSON file repository, recorder, player),
                    infrastructure (AppContainer = composition root, BuildConfig keys), Compose UI
 ```
@@ -101,4 +114,5 @@ app/               Android: adapters (RevenueCat billing, JSON file repository, 
 A student's need has the shape of a term: it starts in week 1 and peaks at midterms and finals. A monthly plan asks the student to decide again in the middle of exams; a Semester Pass (6 months — one term plus the break before the next) matches how students budget. The monthly plan stays as the low-commitment entry. The free allowance (2 lectures a week) is enough to try the loop on one course and is controlled remotely through offering metadata, so it can be tuned without an app update.
 
 ## 10. Change log
+- v0.2 2026-09-24 — measured timestamp drift on a 74-minute recording → 10-minute windows (AC-17..19); server mode with RevenueCat REST entitlement check and server-side allowance (AC-20..23); Files API uploads deleted after use (AC-24).
 - v0.1 2026-09-24 — first version. Emulator run added AC-11b (practice quiz) and the paywall keeps the waiting recording (UC-4 builds it after purchase).

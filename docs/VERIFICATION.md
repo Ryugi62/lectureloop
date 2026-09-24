@@ -2,6 +2,49 @@
 
 Unit tests prove the rules; this file records what was checked against the real world. Newest first.
 
+## 2026-09-24 — Server mode: the entitlement and allowance are enforced where the AI key lives
+
+Local server (`./gradlew :server:installDist`, `FREE_LECTURES_PER_WEEK=2`, no RevenueCat secret yet → everyone free).
+
+| Check | Result |
+|---|---|
+| `POST /v1/cards` with the 1:07 Coulomb lecture | 200, valid card, 6.1 s |
+| Same user, 2nd and 3rd request | 200, then **402** `{"error":"weekly_limit","used":2,"limit":2,"resetsAt":"2026-09-27T15:00:00Z"}` returned without an AI call |
+| App built with only `LECTURELOOP_SERVER_URL` (no AI key) | `BuildConfig.GEMINI_API_KEY = ""`; the emulator built a card through the server |
+| Server allowance 1, app still counting 2 | the app's own count said "1 free lecture left", the server said 402 → the paywall opened with the **server's** numbers ("1/1 free lectures used this week · resets Monday") and the recording kept waiting |
+| RevenueCat REST check (`GET /v1/subscribers/{id}`, `pro` active / expired / grace / lifetime / API down) | contract tests; **live check pending** the RevenueCat secret key |
+
+## 2026-09-24 — Long lecture (74 min): one call vs 10-minute windows
+
+Input: LibriVox public-domain recording of Bertrand Russell, *The Problems of Philosophy*, chapters 1–4 by one reader, joined into one file: 1:13:57, AAC 32 kbps mono, 18.2 MB. Ground truth: an independent Whisper large-v3-turbo transcript (878 segments).
+
+**One call over the whole file (Files API)** — timestamps drift and the quiz leans to the start:
+
+| Model | Time | What went wrong |
+|---|---|---|
+| gemini-3.5-flash-lite | 21.9 s | "Sense data" placed at 03:38; the term is defined at [09:31] (−5:53). All 5 questions from the first 21 minutes. |
+| gemini-3.5-flash | 50.6 s | "Idealism" placed at 56:08; the chapter starts at [58:09] (−2:01). "Descartes' conclusion" at 21:00; "I think, therefore I am" is at [22:17]. |
+| gemini-3.5-flash-lite, synthetic 65 min (three demo lectures separated by 20 minutes of silence) | 11.1 s | Coulomb items placed at 23:55–24:40; they are spoken at 63:51–64:58. |
+
+**Windows** (`CardMerger`: 10-minute windows analysed in parallel, timestamps shifted by the window start, items picked across the whole lecture) — server with `ffmpeg -c copy`, 8 windows, 14.3 s:
+
+| Item | Model | Whisper | Δ |
+|---|---|---|---|
+| Concept: appearance versus reality | 05:01 | [04:56] "Here we have already the beginning of…" (Whisper lost the next 30 s) | ≈ +5 |
+| Question: first distinction that causes trouble | 05:00 | same passage | ≈ +4 |
+| Question: founder of modern philosophy | 20:24 | [20:22] "Descartes… the founder of modern philosophy" | +2 |
+| Concept: method of systematic doubt | 20:33 | inside [20:22–20:36] | 0 |
+| Concept: wave motion | 40:02 | [40:02] "light and heat and sound are all due to wave motions" | 0 |
+| Question: light, heat and sound | 40:03 | [40:02] | +1 |
+| Concept: time order | 50:12 | [50:11] "The time order which events seem to have…" | +1 |
+| Question: thunder and lightning | 51:28 | [51:23] "…the thunder and lightning are simultaneous" | +5 |
+| Concept: importance of the unknown | 1:10:26 | [70:26] "…everything real is of some importance" | 0 |
+| Question: what cannot be known to exist | 1:10:41 | inside [70:32–70:50] | 0 |
+
+Every item lands in the right sentence (max 5 s from the segment start) and the card spans 05:00 → 1:10:41.
+
+**On the phone** (emulator, direct mode, `Mp4AudioSplitter` = MediaExtractor → MediaMuxer, no re-encoding): same file imported from Downloads → card in 48.6 s including the 18 MB copy; items at 02:46, 05:00, 20:30, 20:36, 40:02, 40:03, 50:12, 50:12, 70:03, 70:26 — the same passages as above. One to-do ("Read chapter 3") came from the reader announcing the next chapter; in a real lecture that sentence would not exist, but it shows the to-do rule is literal.
+
 ## 2026-09-24 — Android emulator, end to end (real Gemini, no RevenueCat key yet)
 
 Emulator: API 35 (Google APIs, arm64), 1180×2556 @ 440 dpi. Debug build, `gemini-3.5-flash-lite`.

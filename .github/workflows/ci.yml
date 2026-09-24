@@ -19,7 +19,7 @@ jobs:
           yes | "$SDKM" --licenses > /dev/null || true
           "$SDKM" "platforms;android-37.0" "build-tools;36.0.0" > /dev/null
       - name: "Unit tests, lint and debug APK (no keys needed: the app builds in unconfigured mode)"
-        run: ./gradlew check :app:assembleDebug --no-daemon
+        run: FFMPEG="$(command -v ffmpeg || true)" ./gradlew check :app:assembleDebug --no-daemon
       - uses: actions/upload-artifact@v4
         with:
           name: lectureloop-debug-apk

@@ -33,10 +33,13 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import com.revenuecat.purchases.ui.revenuecatui.customercenter.CustomerCenter
 import io.github.ryugi62.lectureloop.adapters.audio.RecorderState
 import io.github.ryugi62.lectureloop.adapters.audio.RecordingService
 import io.github.ryugi62.lectureloop.adapters.billing.CurrentActivity
+import io.github.ryugi62.lectureloop.domain.Access
 import io.github.ryugi62.lectureloop.ui.AccountViewModel
 import io.github.ryugi62.lectureloop.ui.CaptureStep
 import io.github.ryugi62.lectureloop.ui.CaptureViewModel
@@ -113,7 +116,9 @@ private object Routes {
     const val CAPTURE = "capture?import={import}"
     const val CARD = "card/{id}"
     const val QUIZ = "quiz/{id}"
-    const val PAYWALL = "paywall"
+    const val PAYWALL = "paywall?used={used}&limit={limit}&resets={resets}"
+    fun paywall(access: Access.Paywalled? = null) =
+        if (access == null) "paywall" else "paywall?used=${access.used}&limit=${access.limit}&resets=${access.resetsAt}"
     const val ACCOUNT = "account"
     fun capture(import: Boolean) = "capture?import=$import"
     fun card(id: String) = "card/$id"
@@ -137,7 +142,7 @@ private fun App(factory: Factory, sharedAudio: MutableStateFlow<Uri?>) {
                 onImport = { nav.navigate(Routes.capture(import = true)) },
                 onOpen = { nav.navigate(Routes.card(it.id.value)) },
                 onReview = { nav.navigate(Routes.quiz(it.id.value)) },
-                onUpgrade = { nav.navigate(Routes.PAYWALL) },
+                onUpgrade = { nav.navigate(Routes.paywall()) },
                 onAccount = { nav.navigate(Routes.ACCOUNT) },
             )
         }
@@ -165,7 +170,12 @@ private fun App(factory: Factory, sharedAudio: MutableStateFlow<Uri?>) {
                 QuizScreen(lecture, state.playingAt, result, vm::toggle, vm::submit, onClose = { vm.stopAudio(); nav.popBackStack(Routes.HOME, inclusive = false) })
             }
         }
-        composable(Routes.PAYWALL) {
+        composable(
+            Routes.PAYWALL,
+            arguments = listOf("used", "limit", "resets").map { name ->
+                navArgument(name) { type = NavType.StringType; nullable = true; defaultValue = null }
+            },
+        ) {
             val vm: PaywallViewModel = viewModel(factory = factory)
             val state by vm.state.collectAsStateWithLifecycle()
             LaunchedEffect(state.unlocked) {
@@ -185,7 +195,7 @@ private fun App(factory: Factory, sharedAudio: MutableStateFlow<Uri?>) {
                 BackHandler { showCenter.value = false; vm.refresh() }
                 CustomerCenter(modifier = Modifier.fillMaxSize(), onDismiss = { showCenter.value = false; vm.refresh() })
             } else {
-                AccountScreen(state, vm.billingConfigured, onManage = { showCenter.value = true }, onUpgrade = { nav.navigate(Routes.PAYWALL) }, onRestore = vm::restore, onBack = { nav.popBackStack() })
+                AccountScreen(state, vm.billingConfigured, onManage = { showCenter.value = true }, onUpgrade = { nav.navigate(Routes.paywall()) }, onRestore = vm::restore, onBack = { nav.popBackStack() })
             }
         }
     }
@@ -233,7 +243,7 @@ private fun CaptureRoute(
         vm.handledStep = step
         when (val s = step) {
             is CaptureStep.Done -> nav.navigate(Routes.card(s.lectureId.value)) { popUpTo(Routes.HOME) }
-            is CaptureStep.Paywalled -> nav.navigate(Routes.PAYWALL)
+            is CaptureStep.Paywalled -> nav.navigate(Routes.paywall(s.access))
             else -> Unit
         }
     }
@@ -243,7 +253,7 @@ private fun CaptureRoute(
             title = "Your recording is waiting",
             message = "You've used ${s.access.used} of ${s.access.limit} free lectures this week. Unlock now and we'll build this card straight away — or close, and it resets on Monday.",
             cta = "See plans",
-            onRetry = { nav.navigate(Routes.PAYWALL) },
+            onRetry = { nav.navigate(Routes.paywall(s.access)) },
             onClose = close,
         )
         CaptureStep.Record, CaptureStep.Importing, is CaptureStep.Done -> RecordStep(

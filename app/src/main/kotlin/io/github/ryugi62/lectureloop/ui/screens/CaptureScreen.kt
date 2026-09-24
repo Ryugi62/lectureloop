@@ -147,7 +147,11 @@ fun ProcessingStep(step: CaptureStep.Processing) {
         val listening = step.phase as? ProcessPhase.Listening
         PhaseRow("Checking this week's allowance", done = step.phase != ProcessPhase.CheckingAllowance, active = step.phase == ProcessPhase.CheckingAllowance)
         PhaseRow(
-            if ((listening?.attempt ?: 1) > 1) "Listening again with fixes (try 2)" else "Listening to ${Timestamp(step.audio.durationSeconds).label} of lecture",
+            when {
+                (listening?.attempt ?: 1) > 1 -> "Listening again with fixes (try 2)"
+                (listening?.parts ?: 1) > 1 -> "Listening to ${Timestamp(step.audio.durationSeconds).label} of lecture in ${listening!!.parts} parts"
+                else -> "Listening to ${Timestamp(step.audio.durationSeconds).label} of lecture"
+            },
             done = step.phase == ProcessPhase.CheckingCard || step.phase == ProcessPhase.Saving,
             active = listening != null,
         )

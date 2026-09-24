@@ -28,4 +28,6 @@ tasks.test {
     environment("LIVE_GEMINI", System.getenv("LIVE_GEMINI") ?: "")
     environment("GEMINI_API_KEY", System.getenv("GEMINI_API_KEY") ?: "")
     environment("LIVE_AUDIO", System.getenv("LIVE_AUDIO") ?: "")
+    environment("LIVE_AUDIO_SECONDS", System.getenv("LIVE_AUDIO_SECONDS") ?: "")
+    environment("LIVE_MODEL", System.getenv("LIVE_MODEL") ?: "")
 }
