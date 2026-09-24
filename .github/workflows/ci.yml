@@ -16,7 +16,7 @@ jobs:
       - uses: android-actions/setup-android@v3
       - name: Android SDK 37
         run: sdkmanager "platforms;android-37.0" "build-tools;36.0.0"
-      - name: Unit tests, lint and debug APK (no keys: app builds in "unconfigured" mode)
+      - name: "Unit tests, lint and debug APK (no keys needed: the app builds in unconfigured mode)"
         run: ./gradlew check :app:assembleDebug --no-daemon
       - uses: actions/upload-artifact@v4
         with:
