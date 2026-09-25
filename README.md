@@ -10,7 +10,7 @@ LectureLoop is an Android app for students. Right after class it turns the recor
 <img src="docs/screenshots/03-quiz.png" width="30%" alt="Quiz: one question per screen, the answer links back to the second it was said">
 </p>
 
-Built for the RevenueCat Shipaton 2026 **Next Gen Award** (student category). Demo video: _link added on submission_.
+Built for the RevenueCat Shipaton 2026 **Next Gen Award** (student category). Demo video (1:51): https://youtu.be/DSlLwa6--fc
 
 ## Why
 
@@ -98,7 +98,7 @@ RevenueCat: entitlement `pro`; Test Store products for a 6-month Semester Pass a
 
 Without keys the app still builds and runs: cards cannot be built and the paywall explains which key is missing.
 
-The 2-minute demo is recorded by a script (real app, real API calls): [`docs/DEMO.md`](docs/DEMO.md).
+Demo video (1:51): https://youtu.be/DSlLwa6--fc — recorded by a script (real app, real API calls): [`docs/DEMO.md`](docs/DEMO.md).
 
 ## Privacy
 

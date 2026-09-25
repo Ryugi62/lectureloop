@@ -27,6 +27,7 @@ import android.provider.DocumentsContract
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import androidx.core.content.IntentCompat
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -191,6 +192,11 @@ private fun App(factory: Factory, sharedAudio: MutableStateFlow<Uri?>) {
             val vm: AccountViewModel = viewModel(factory = factory)
             val state by vm.state.collectAsStateWithLifecycle()
             val showCenter = remember { mutableStateOf(false) }
+            // Back from the paywall (a purchase) or from the system: show the entitlement as it is now.
+            LifecycleResumeEffect(Unit) {
+                vm.refresh()
+                onPauseOrDispose { }
+            }
             if (showCenter.value) {
                 BackHandler { showCenter.value = false; vm.refresh() }
                 CustomerCenter(modifier = Modifier.fillMaxSize(), onDismiss = { showCenter.value = false; vm.refresh() })

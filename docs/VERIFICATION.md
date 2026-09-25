@@ -2,6 +2,21 @@
 
 Unit tests prove the rules; this file records what was checked against the real world. Newest first.
 
+## 2026-09-26 — RevenueCat Test Store, live: purchase, server entitlement, restore, Customer Center, metadata
+
+Server mode as it ships: `server` with `GEMINI_API_KEY` + `REVENUECAT_SECRET_KEY` + ffmpeg, app built with only
+`LECTURELOOP_SERVER_URL` and `REVENUECAT_TEST_STORE_KEY` (no AI key in the APK). Emulator API 35, 1179×2556.
+
+| Check | Result |
+|---|---|
+| Paywall with the real offering | **Crashed** on the first run: the monthly plan's weekly price divided by 26/6 weeks exactly (`ArithmeticException`, no finite decimal). Fixed with one rounded division + a test (`PlanMath`, 90 tests); the paywall now shows "$19.99 / 6 months · $0.77 a week · Save 33% vs monthly" and "$4.99 / month · $1.15 a week". |
+| 3rd lecture of the week → Semester Pass → Test Store sheet "Test valid purchase" | The waiting recording was built straight away; Home shows "Unlimited lectures". No card, no payment: the sheet says it is a test purchase. |
+| Server entitlement, live (`GET /v1/subscribers/{id}`) | The server built the 3rd and 4th lecture of the week for the buyer (4 used, allowance 2), which only the live `pro` check allows. REST shows `pro` from `semester_pass`, `store: test_store`, `is_sandbox: true`, $19.99, 30-minute renewal. |
+| Account → See plans → buy → back | First pass showed "Free" until reopened; the Account screen now refreshes when it resumes → "Semester Pass · active · Unlimited lectures". |
+| Restore purchases (Account) | Stays "Semester Pass · active". |
+| Customer Center (Manage subscription) | "Semester Pass · Active · Last charge: $19.99 · Next billing date · Test Store · Restore past purchases". |
+| Offering metadata `free_lectures_per_week` 2 → 1 in the dashboard, same APK, fresh install | Home: "1 free lectures left this week"; set back to 2 and confirmed by `GET /v1/subscribers/{id}/offerings`. |
+
 ## 2026-09-24 — Server mode: the entitlement and allowance are enforced where the AI key lives
 
 Local server (`./gradlew :server:installDist`, `FREE_LECTURES_PER_WEEK=2`, no RevenueCat secret yet → everyone free).
@@ -12,7 +27,7 @@ Local server (`./gradlew :server:installDist`, `FREE_LECTURES_PER_WEEK=2`, no Re
 | Same user, 2nd and 3rd request | 200, then **402** `{"error":"weekly_limit","used":2,"limit":2,"resetsAt":"2026-09-27T15:00:00Z"}` returned without an AI call |
 | App built with only `LECTURELOOP_SERVER_URL` (no AI key) | `BuildConfig.GEMINI_API_KEY = ""`; the emulator built a card through the server |
 | Server allowance 1, app still counting 2 | the app's own count said "1 free lecture left", the server said 402 → the paywall opened with the **server's** numbers ("1/1 free lectures used this week · resets Monday") and the recording kept waiting |
-| RevenueCat REST check (`GET /v1/subscribers/{id}`, `pro` active / expired / grace / lifetime / API down) | contract tests; **live check pending** the RevenueCat secret key |
+| RevenueCat REST check (`GET /v1/subscribers/{id}`, `pro` active / expired / grace / lifetime / API down) | contract tests; live check done 2026-09-26 (above) |
 
 ## 2026-09-24 — Long lecture (74 min): one call vs 10-minute windows
 
@@ -58,8 +73,8 @@ Emulator: API 35 (Google APIs, arm64), 1180×2556 @ 440 dpi. Debug build, `gemin
 | Clock moved +1 day | "Today's loop" shows the lecture at Day 1; 4/5 → "Day 1 done", next review Sunday Sep 27 (day 3). |
 | 3rd lecture in the same week | Paywall opens with "2/2 free lectures used this week · resets Monday"; closing it shows "Your recording is waiting". |
 | Record screen | Foreground service starts, timer runs, closing discards the audio. |
-| RevenueCat Test Store purchase, restore, Customer Center | **Pending** — needs the RevenueCat project key (see REVENUECAT_SETUP.md). |
-| Offering metadata changed in the dashboard (`free_lectures_per_week` 2 → 1) shows up without a new build | **Pending** — same key. |
+| RevenueCat Test Store purchase, restore, Customer Center | Done 2026-09-26 (above). |
+| Offering metadata changed in the dashboard (`free_lectures_per_week` 2 → 1) shows up without a new build | Done 2026-09-26 (above). |
 
 Bugs found and fixed during this run: a remembered class name was appended to instead of replaced by the demo driver (driver clears the field now); returning from the paywall re-opened the file picker and the paywall (one-shot guards in `CaptureViewModel`); a 147.8 s file was measured as 147 s, which could reject a correct last timestamp (duration now rounds up).
 
