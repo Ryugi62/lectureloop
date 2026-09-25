@@ -25,6 +25,13 @@ class PlanMathTest {
         assertEquals("$0.77", PlanMath.formatMicros(PlanMath.weeklyMicros(semester)!!, "USD"))
     }
 
+    @Test fun weeklyEquivalentForPeriodsThatAreNotWholeWeeks() {
+        // A month is 26/6 = 4.333… weeks: the division must round instead of throwing (the paywall crashed on the real Test Store offering).
+        assertEquals(1_150_000, PlanMath.weeklyMicros(monthly)) // 4.99 / 4.333 = 1.1515
+        assertEquals(1_000_000, PlanMath.weeklyMicros(monthly.copy(priceMicros = 52_000_000, periodMonths = 12)))
+        assertEquals(460_000, PlanMath.weeklyMicros(monthly.copy(priceMicros = 9_990_000, periodMonths = 5))) // 9.99 / 21.667 = 0.4611
+    }
+
     @Test fun kindFromPackageIdentifierOrPeriod() {
         assertEquals(PlanKind.SEMESTER, PlanMath.kindOf(packageId = "\$rc_six_month", periodMonths = 6))
         assertEquals(PlanKind.MONTHLY, PlanMath.kindOf(packageId = "\$rc_monthly", periodMonths = 1))

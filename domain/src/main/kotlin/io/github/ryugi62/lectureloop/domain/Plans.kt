@@ -43,8 +43,9 @@ object PlanMath {
     /** Price per week, rounded to a whole cent (10_000 micros). */
     fun weeklyMicros(plan: PlanOption): Long? {
         val months = plan.periodMonths ?: return null
-        val weeks = BigDecimal(WEEKS_PER_SIX_MONTHS).multiply(BigDecimal(months)).divide(BigDecimal(6))
-        val perWeek = BigDecimal(plan.priceMicros).divide(weeks, 0, RoundingMode.HALF_UP)
+        // price / (26 * months / 6) = price * 6 / (26 * months): one rounded division, so periods that are not whole weeks never throw
+        val perWeek = BigDecimal(plan.priceMicros).multiply(BigDecimal(6))
+            .divide(BigDecimal(WEEKS_PER_SIX_MONTHS).multiply(BigDecimal(months)), 0, RoundingMode.HALF_UP)
         return perWeek.divide(BigDecimal(10_000), 0, RoundingMode.HALF_UP).multiply(BigDecimal(10_000)).toLong()
     }
 

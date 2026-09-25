@@ -71,7 +71,7 @@ The spec comes first: [`SPEC.md`](SPEC.md) lists the ubiquitous language, the us
 
 ## Tests and verification
 
-- **89 tests**: domain 39, application 25, Gemini adapters 10 (8 contract tests against a mock server + 2 live checks that run only on request), server 13 (1 needs `FFMPEG`), app adapters 2. `./gradlew check` — CI runs it on every push.
+- **90 tests**: domain 40, application 25, Gemini adapters 10 (8 contract tests against a mock server + 2 live checks that run only on request), server 13 (1 needs `FFMPEG`), app adapters 2. `./gradlew check` — CI runs it on every push.
 - `LayeringTest` fails the build if domain or application import a framework, SDK or `java.io.File`.
 - Physical checks against the real API, the server and an emulator are written up in [`docs/VERIFICATION.md`](docs/VERIFICATION.md): a 2:28 lecture becomes a valid card in about 5–8 s with every timestamp within 2 s of an independent Whisper transcript; a 74-minute recording becomes a card in 14 s on the server (49 s on the phone, including the import) with every item in the right sentence.
 

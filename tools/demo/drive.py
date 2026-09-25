@@ -174,8 +174,14 @@ def import_file(file_text, course):
     tap(id="cta")
 
 
-def scene_hook():
+def launch_app():
+    """Off camera: the launcher shows other companies' app icons, so the video starts inside the app."""
     shell(f"am start -n {PKG}/.MainActivity")
+    wait(id="cta", timeout=20)
+    wait(regex=r"free lectures? left", timeout=20)
+
+
+def scene_hook():
     wait(id="cta", timeout=20)
     time.sleep(4)
 
@@ -280,7 +286,7 @@ SCENES = {
     "long": scene_long,
     "account": scene_account,
 }
-OFF_CAMERA = {"nextday": [seed_second_lecture, jump_one_day]}
+OFF_CAMERA = {"hook": [launch_app], "nextday": [seed_second_lecture, jump_one_day]}
 
 
 def main():
